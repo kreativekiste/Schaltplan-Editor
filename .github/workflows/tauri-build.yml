@@ -49,26 +49,20 @@ jobs:
         run: npm run build
 
       - name: Build Tauri App
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          includeRelease: false
+        run: npm run tauri build
 
       - name: Find and prepare binary (Windows only)
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          Write-Host "=== Listing all .exe files in target ==="
-          Get-ChildItem -Path . -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
-          
+          Write-Host "=== All .exe files found ==="
+          Get-ChildItem -Path . -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notlike "*\.cargo*" } | Select-Object FullName
+
           $candidates = @(
             "src-tauri\target\release\schaltplan-editor.exe",
-            "src-tauri\target\x86_64-pc-windows-msvc\release\schaltplan-editor.exe",
-            "target\release\schaltplan-editor.exe",
-            "target\x86_64-pc-windows-msvc\release\schaltplan-editor.exe"
+            "src-tauri\target\x86_64-pc-windows-msvc\release\schaltplan-editor.exe"
           )
-          
+
           $found = $null
           foreach ($path in $candidates) {
             if (Test-Path $path) {
@@ -77,7 +71,7 @@ jobs:
               break
             }
           }
-          
+
           if ($found) {
             $destDir = "src-tauri\target\release"
             if (!(Test-Path $destDir)) { New-Item -ItemType Directory $destDir -Force }
@@ -88,7 +82,7 @@ jobs:
               Write-Host "Binary already at correct location."
             }
           } else {
-            Write-Error "Could not find schaltplan-editor.exe in any known location."
+            Write-Error "Could not find schaltplan-editor.exe"
             exit 1
           }
 
