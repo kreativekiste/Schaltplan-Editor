@@ -1,6 +1,6 @@
 {
   "name": "schaltplan-editor",
-  "version": "3.3",
+  "version": "3.3.0",
   "description": "Ein interaktiver Schaltplan-Editor für die Erstellung von Schaltplänen.",
   "main": "main.js",
   "scripts": {

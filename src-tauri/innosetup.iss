@@ -1,5 +1,5 @@
 #define MyAppName "Schaltplan-Editor"
-#define MyAppVersion "3.3"
+#define MyAppVersion "3.3.0"
 #define MyAppPublisher "kreativekiste"
 #define MyAppURL "https://www.kreativekiste.de"
 #define MyAppExeName "schaltplan-editor.exe"
