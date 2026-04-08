@@ -52,9 +52,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Automatically create a draft release for tests when manually triggered
           releaseId: ''
           releaseDraft: true
           prerelease: false
           includeRelease: true
           includeUpdaterJson: false
+
+      - name: Create Inno Setup Installer (Windows only)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          mkdir src-tauri\dist_setup
+          iscc src-tauri\innosetup.iss
+
+      - name: Upload Inno Setup Artifact (Windows only)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: InnoSetup-Installer
+          path: src-tauri/dist_setup/SchaltplanEditor_Setup.exe
+
