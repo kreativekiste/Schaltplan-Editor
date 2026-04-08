@@ -55,6 +55,21 @@ jobs:
         with:
           includeRelease: false
 
+      - name: Ensure binary is in expected location (Windows only)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem -Path "src-tauri/target" -Filter "schaltplan-editor.exe" -Recurse | Where-Object { $_.FullName -like "*release*" } | Select-Object -First 1 -ExpandProperty FullName
+          if ($exePath) {
+              $destDir = "src-tauri/target/release"
+              if (!(Test-Path $destDir)) { New-Item -ItemType Directory $destDir -Force }
+              Copy-Item $exePath "$destDir/schaltplan-editor.exe" -Force
+              Write-Host "Found binary at $exePath and copied to $destDir"
+          } else {
+              Write-Error "Could not find schaltplan-editor.exe in src-tauri/target"
+              exit 1
+          }
+
       - name: Create Inno Setup Installer (Windows only)
         if: matrix.platform == 'windows-latest'
         run: |
