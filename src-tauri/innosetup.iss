@@ -1,5 +1,5 @@
 #define MyAppName "Schaltplan-Editor"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "3.3"
 #define MyAppPublisher "kreativekiste"
 #define MyAppURL "https://www.kreativekiste.de"
 #define MyAppExeName "schaltplan-editor.exe"
@@ -24,6 +24,7 @@ OutputBaseFilename=SchaltplanEditor_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+LicenseFile=..\LICENSE.md
 
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"

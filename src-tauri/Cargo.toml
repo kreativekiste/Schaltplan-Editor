@@ -1,6 +1,6 @@
 [package]
 name = "schaltplan-editor"
-version = "1.0.0"
+version = "3.3"
 description = "Schaltplan Editor"
 authors = ["you"]
 edition = "2021"
