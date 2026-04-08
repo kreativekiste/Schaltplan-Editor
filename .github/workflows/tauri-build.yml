@@ -55,19 +55,41 @@ jobs:
         with:
           includeRelease: false
 
-      - name: Ensure binary is in expected location (Windows only)
+      - name: Find and prepare binary (Windows only)
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          $exePath = Get-ChildItem -Path "src-tauri/target" -Filter "schaltplan-editor.exe" -Recurse | Where-Object { $_.FullName -like "*release*" } | Select-Object -First 1 -ExpandProperty FullName
-          if ($exePath) {
-              $destDir = "src-tauri/target/release"
-              if (!(Test-Path $destDir)) { New-Item -ItemType Directory $destDir -Force }
-              Copy-Item $exePath "$destDir/schaltplan-editor.exe" -Force
-              Write-Host "Found binary at $exePath and copied to $destDir"
+          Write-Host "=== Listing all .exe files in target ==="
+          Get-ChildItem -Path . -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+          
+          $candidates = @(
+            "src-tauri\target\release\schaltplan-editor.exe",
+            "src-tauri\target\x86_64-pc-windows-msvc\release\schaltplan-editor.exe",
+            "target\release\schaltplan-editor.exe",
+            "target\x86_64-pc-windows-msvc\release\schaltplan-editor.exe"
+          )
+          
+          $found = $null
+          foreach ($path in $candidates) {
+            if (Test-Path $path) {
+              $found = $path
+              Write-Host "Found binary at: $path"
+              break
+            }
+          }
+          
+          if ($found) {
+            $destDir = "src-tauri\target\release"
+            if (!(Test-Path $destDir)) { New-Item -ItemType Directory $destDir -Force }
+            if ($found -ne "$destDir\schaltplan-editor.exe") {
+              Copy-Item $found "$destDir\schaltplan-editor.exe" -Force
+              Write-Host "Copied to $destDir"
+            } else {
+              Write-Host "Binary already at correct location."
+            }
           } else {
-              Write-Error "Could not find schaltplan-editor.exe in src-tauri/target"
-              exit 1
+            Write-Error "Could not find schaltplan-editor.exe in any known location."
+            exit 1
           }
 
       - name: Create Inno Setup Installer (Windows only)
