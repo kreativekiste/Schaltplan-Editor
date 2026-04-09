@@ -61,18 +61,3 @@ jobs:
           releaseDraft: true
           prerelease: false
           includeRelease: true
-
-      - name: Create Inno Setup Installer (Windows only)
-        if: matrix.platform == 'windows-latest'
-        run: |
-          mkdir dist_setup
-          iscc src-tauri/innosetup.iss
-
-      - name: Attach Inno Setup to Release (Windows only)
-        if: matrix.platform == 'windows-latest' && github.ref_type == 'tag'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist_setup/*.exe
-          tag_name: ${{ github.ref_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

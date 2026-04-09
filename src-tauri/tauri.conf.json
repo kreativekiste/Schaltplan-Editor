@@ -1,6 +1,6 @@
 {
   "productName": "schaltplan-editor",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "identifier": "com.kreativekiste.schaltplan-editor",
   "build": {
     "beforeDevCommand": "",
@@ -34,6 +34,11 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
+    "windows": {
+      "nsis": {
+        "languages": ["German"]
+      }
+    },
     "linux": {
       "deb": {
       }
