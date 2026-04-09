@@ -1,10 +1,23 @@
-// www.kreativekiste.de // 07.04.2026 // Version 3.1
+// www.kreativekiste.de // 09.04.2026 // Version 3.2
 
 // Globale Variable für die Zählweise ('din' = nach Position, 'continuous' = fortlaufend)
 window.numberingMode = 'din'; 
 window.currentWireConn = null; // Speichert das aktuell ausgewählte Kabel für das Menü
 
-document.getElementById('btn-clear').addEventListener('click', clearCanvas);
+// SICHERHEITS-FUNKTIONEN: Wir holen die Menüs live, damit nichts abstürzt, wenn sie kurzfristig fehlen
+function getContextMenu() { return document.getElementById('context-menu'); }
+function getWireContextMenu() { return document.getElementById('wire-context-menu'); }
+
+// Start-Setup: Verstecke Menüs (mit leichter Verzögerung, damit das HTML sicher geladen ist)
+setTimeout(() => {
+    const cm = getContextMenu();
+    if (cm) cm.style.display = 'none';
+    const wcm = getWireContextMenu();
+    if (wcm) wcm.style.display = 'none';
+}, 100);
+
+const btnClear = document.getElementById('btn-clear');
+if (btnClear) btnClear.addEventListener('click', clearCanvas);
 
 // --- ORDNER STEUERUNG & BOMBENFESTER KONTEXT-MENÜ-FIX ---
 document.addEventListener('click', (e) => {
@@ -28,43 +41,55 @@ document.addEventListener('click', (e) => {
     }
 });
 
-const contextMenu = document.getElementById('context-menu');
-contextMenu.style.display = 'none'; // Menü beim Start hart verstecken
-
-const wireContextMenu = document.getElementById('wire-context-menu');
-if (wireContextMenu) wireContextMenu.style.display = 'none';
-
 function showContextMenu(x, y) {
     hideWireContextMenu(); // Sicherstellen, dass das Kabelmenü zu ist
-    contextMenu.style.left = x + 'px';
-    contextMenu.style.top = y + 'px';
-    contextMenu.classList.remove('hidden');
-    contextMenu.style.display = 'block'; // Menü hart einblenden
+    
+    const ctxMenu = getContextMenu();
+    if (!ctxMenu) {
+        console.error("FEHLER: HTML Element mit id 'context-menu' nicht gefunden!");
+        return;
+    }
 
-    const type = contextMenuTarget ? contextMenuTarget.dataset.type : null;
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    ctxMenu.classList.remove('hidden');
+    ctxMenu.style.display = 'block'; // Menü hart einblenden
+
+    const type = window.contextMenuTarget ? window.contextMenuTarget.dataset.type : null;
     
-    document.querySelector('.contact-only').style.display = (type === 'schliesser' || type === 'oeffner') ? 'block' : 'none';
-    document.querySelector('.power-only').style.display = (type === 'hauptkontakt') ? 'block' : 'none';
-    document.querySelector('.assign-only').style.display = (type === 'schuetz' || type === 'schliesser' || type === 'oeffner') ? 'block' : 'none';
-    document.querySelector('.motor-only').style.display = (type === 'motor') ? 'block' : 'none';
-    document.querySelector('.terminal-only').style.display = (type === 'klemme') ? 'block' : 'none';
-    document.querySelector('.lamp-only').style.display = (type === 'lampe') ? 'block' : 'none';
+    const elContact = document.querySelector('.contact-only');
+    if(elContact) elContact.style.display = (type === 'schliesser' || type === 'oeffner') ? 'block' : 'none';
     
-    // Zeige das Pfeil-Menü nur bei den Abbruch-Pfeilen an
-    document.querySelector('.arrow-only').style.display = (type === 'pfeil_raus' || type === 'pfeil_rein') ? 'block' : 'none';
+    const elPower = document.querySelector('.power-only');
+    if(elPower) elPower.style.display = (type === 'hauptkontakt') ? 'block' : 'none';
+    
+    const elAssign = document.querySelector('.assign-only');
+    if(elAssign) elAssign.style.display = (type === 'schuetz' || type === 'schliesser' || type === 'oeffner') ? 'block' : 'none';
+    
+    const elMotor = document.querySelector('.motor-only');
+    if(elMotor) elMotor.style.display = (type === 'motor') ? 'block' : 'none';
+    
+    const elTerm = document.querySelector('.terminal-only');
+    if(elTerm) elTerm.style.display = (type === 'klemme') ? 'block' : 'none';
+    
+    const elLamp = document.querySelector('.lamp-only');
+    if(elLamp) elLamp.style.display = (type === 'lampe') ? 'block' : 'none';
+    
+    const elArrow = document.querySelector('.arrow-only');
+    if(elArrow) elArrow.style.display = (type === 'pfeil_raus' || type === 'pfeil_rein') ? 'block' : 'none';
     
     const isTasterOrSchalter = (type === 'taster' || type === 'schalter');
-    document.querySelector('.taster-only').style.display = isTasterOrSchalter ? 'block' : 'none';
+    const elTasterOnly = document.querySelector('.taster-only');
+    if(elTasterOnly) elTasterOnly.style.display = isTasterOrSchalter ? 'block' : 'none';
 
     if (isTasterOrSchalter) {
         const prefix = type === 'schalter' ? 'Schalter' : 'Taster';
-        document.getElementById('menu-taster-no').innerHTML = `🔘 ${prefix} Schließer`;
-        document.getElementById('menu-taster-nc').innerHTML = `🔘 ${prefix} Öffner`;
-        document.getElementById('menu-taster-latch-no').innerHTML = `🔒 ${prefix} Schließer rastend`;
-        document.getElementById('menu-taster-latch-nc').innerHTML = `🔒 ${prefix} Öffner rastend`;
+        const tno = document.getElementById('menu-taster-no'); if(tno) tno.innerHTML = `🔘 ${prefix} Schließer`;
+        const tnc = document.getElementById('menu-taster-nc'); if(tnc) tnc.innerHTML = `🔘 ${prefix} Öffner`;
+        const tlno = document.getElementById('menu-taster-latch-no'); if(tlno) tlno.innerHTML = `🔒 ${prefix} Schließer rastend`;
+        const tlnc = document.getElementById('menu-taster-latch-nc'); if(tlnc) tlnc.innerHTML = `🔒 ${prefix} Öffner rastend`;
     }
 
-    // Beschriftung des Umschalt-Buttons je nach Modus anpassen
     const toggleBtn = document.getElementById('menu-toggle-numbering');
     if (toggleBtn) {
         toggleBtn.innerHTML = window.numberingMode === 'din' ? '🔄 Zählweise: DIN (Position)' : '🔄 Zählweise: Fortlaufend';
@@ -72,40 +97,44 @@ function showContextMenu(x, y) {
 }
 
 function hideContextMenu() {
-    contextMenu.classList.add('hidden');
-    contextMenu.style.display = 'none'; 
+    const ctxMenu = getContextMenu();
+    if (ctxMenu) {
+        ctxMenu.classList.add('hidden');
+        ctxMenu.style.display = 'none'; 
+    }
 }
 
 // --- NEU: KABEL KONTEXTMENÜ STEUERUNG ---
 window.showWireContextMenu = function(x, y, conn) {
     hideContextMenu(); // Bauteilmenü sicherheitshalber schließen
     window.currentWireConn = conn;
-    if (wireContextMenu) {
-        wireContextMenu.style.left = x + 'px';
-        wireContextMenu.style.top = y + 'px';
-        wireContextMenu.classList.remove('hidden');
-        wireContextMenu.style.display = 'block';
+    const wCtxMenu = getWireContextMenu();
+    if (wCtxMenu) {
+        wCtxMenu.style.left = x + 'px';
+        wCtxMenu.style.top = y + 'px';
+        wCtxMenu.classList.remove('hidden');
+        wCtxMenu.style.display = 'block';
     }
 };
 
 function hideWireContextMenu() {
-    if (wireContextMenu) {
-        wireContextMenu.classList.add('hidden');
-        wireContextMenu.style.display = 'none';
-        // HIER WAR DER FEHLER: window.currentWireConn = null; wurde entfernt. 
-        // Sonst vergisst das Skript das Kabel, bevor der Klick ausgeführt wird!
+    const wCtxMenu = getWireContextMenu();
+    if (wCtxMenu) {
+        wCtxMenu.classList.add('hidden');
+        wCtxMenu.style.display = 'none';
     }
 }
 
 // Event-Listener für das Kabel-Menü anlegen
-if (document.getElementById('wire-menu-toggle-points')) {
-    document.getElementById('wire-menu-toggle-points').addEventListener('click', (e) => {
+const wireMenuPoints = document.getElementById('wire-menu-toggle-points');
+if (wireMenuPoints) {
+    wireMenuPoints.addEventListener('click', (e) => {
         e.stopPropagation(); 
         hideWireContextMenu();
         if (window.currentWireConn) {
             window.currentWireConn.showHandles = !window.currentWireConn.showHandles;
             if (typeof updateCables === 'function') updateCables();
-            addHistory(window.currentWireConn.showHandles ? 'Kabel-Punkte eingeblendet' : 'Kabel-Punkte ausgeblendet');
+            if (typeof addHistory === 'function') addHistory(window.currentWireConn.showHandles ? 'Kabel-Punkte eingeblendet' : 'Kabel-Punkte ausgeblendet');
         }
     });
 
@@ -117,7 +146,7 @@ if (document.getElementById('wire-menu-toggle-points')) {
             if (newName !== null) {
                 window.currentWireConn.name = newName;
                 if (typeof updateCables === 'function') updateCables();
-                addHistory('Kabelname geändert');
+                if (typeof addHistory === 'function') addHistory('Kabelname geändert');
             }
         }
     });
@@ -131,7 +160,7 @@ if (document.getElementById('wire-menu-toggle-points')) {
                 if (window.currentWireConn) {
                     window.currentWireConn.color = color;
                     if (typeof updateCables === 'function') updateCables();
-                    addHistory(`Kabelfarbe geändert auf ${color}`);
+                    if (typeof addHistory === 'function') addHistory(`Kabelfarbe geändert auf ${color}`);
                 }
             });
         }
@@ -141,160 +170,249 @@ if (document.getElementById('wire-menu-toggle-points')) {
         e.stopPropagation(); 
         hideWireContextMenu();
         if (window.currentWireConn) {
-            window.currentWireConn.pathElem.remove();
+            if (window.currentWireConn.pathElem) window.currentWireConn.pathElem.remove();
             if (window.currentWireConn.h1) window.currentWireConn.h1.remove();
             if (window.currentWireConn.h2) window.currentWireConn.h2.remove();
             if (window.currentWireConn.h3) window.currentWireConn.h3.remove();
             if (window.currentWireConn.textElem) window.currentWireConn.textElem.remove();
             
             // Verbindung aus dem Array löschen
-            connections = connections.filter(c => c !== window.currentWireConn);
+            if (typeof connections !== 'undefined') {
+                connections = connections.filter(c => c !== window.currentWireConn);
+            }
             if (typeof updateCables === 'function') updateCables();
-            addHistory('Kabel gelöscht');
+            if (typeof addHistory === 'function') addHistory('Kabel gelöscht');
         }
     });
 }
 
-
-document.getElementById('menu-edit').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if (contextMenuTarget && typeof openEditorForInstance === 'function') openEditorForInstance(contextMenuTarget);
-});
+const menuEditBtn = document.getElementById('menu-edit');
+if (menuEditBtn) {
+    menuEditBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if (window.contextMenuTarget && typeof openEditorForInstance === 'function') {
+            openEditorForInstance(window.contextMenuTarget);
+        }
+    });
+}
 
 // --- Speichern und Laden (inklusive numberingMode) ---
-document.getElementById('btn-save-project').onclick = () => {
-    if(typeof saveCurrentPageState === 'function') saveCurrentPageState();
-    const data = { pages: pages, coilCounter: coilCounter, numberingMode: window.numberingMode };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
-    const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "schaltplan_projekt.json"); downloadAnchor.click();
-    addHistory('Projekt gespeichert');
-};
+const btnSaveProject = document.getElementById('btn-save-project');
+if (btnSaveProject) {
+    btnSaveProject.onclick = () => {
+        if(typeof saveCurrentPageState === 'function') saveCurrentPageState();
+        const data = { 
+            pages: typeof pages !== 'undefined' ? pages : [], 
+            coilCounter: typeof coilCounter !== 'undefined' ? coilCounter : 1, 
+            numberingMode: window.numberingMode 
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr); downloadAnchor.setAttribute("download", "schaltplan_projekt.json"); downloadAnchor.click();
+        if (typeof addHistory === 'function') addHistory('Projekt gespeichert');
+    };
+}
 
 const fileInput = document.getElementById('file-input');
-document.getElementById('btn-load-project').onclick = () => fileInput.click();
+const btnLoadProject = document.getElementById('btn-load-project');
+if (btnLoadProject && fileInput) {
+    btnLoadProject.onclick = () => fileInput.click();
 
-fileInput.onchange = (e) => {
-    const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
-    reader.onload = (event) => {
-        const data = JSON.parse(event.target.result); pages = data.pages; coilCounter = data.coilCounter || 1; currentPageId = pages[0].id;
-        window.numberingMode = data.numberingMode || 'din';
-        if(typeof loadPageState === 'function') loadPageState(currentPageId); if(typeof renderTabs === 'function') renderTabs();
-        addHistory('Projekt geladen');
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+        reader.onload = (event) => {
+            const data = JSON.parse(event.target.result); 
+            if (typeof pages !== 'undefined') pages = data.pages; 
+            if (typeof coilCounter !== 'undefined') coilCounter = data.coilCounter || 1; 
+            if (typeof currentPageId !== 'undefined' && data.pages.length > 0) currentPageId = data.pages[0].id;
+            window.numberingMode = data.numberingMode || 'din';
+            if(typeof loadPageState === 'function' && typeof currentPageId !== 'undefined') loadPageState(currentPageId); 
+            if(typeof renderTabs === 'function') renderTabs();
+            if (typeof addHistory === 'function') addHistory('Projekt geladen');
+        };
+        reader.readAsText(file);
     };
-    reader.readAsText(file);
-};
+}
 
 function clearCanvas() {
-    canvas.querySelectorAll('.dropped-component').forEach(c => c.remove());
-    wiringLayer.innerHTML = ''; connections.length = 0; startPort = null; coilCounter = 1; 
-    isAssignMode = false; window.crossPageAssign.active = false; canvas.classList.remove('assign-mode'); selectedParent = null; hideContextMenu(); hideWireContextMenu();
+    const canvas = document.getElementById('area-4');
+    if (canvas) canvas.querySelectorAll('.dropped-component').forEach(c => c.remove());
+    const wiringLayer = document.getElementById('wiring-layer');
+    if (wiringLayer) wiringLayer.innerHTML = ''; 
+    if (typeof connections !== 'undefined') connections.length = 0; 
+    if (typeof startPort !== 'undefined') startPort = null; 
+    if (typeof coilCounter !== 'undefined') coilCounter = 1; 
+    if (typeof isAssignMode !== 'undefined') isAssignMode = false; 
+    if (typeof crossPageAssign !== 'undefined') crossPageAssign.active = false; 
+    if (canvas) canvas.classList.remove('assign-mode'); 
+    if (typeof selectedParent !== 'undefined') selectedParent = null; 
+    hideContextMenu(); hideWireContextMenu();
     window.currentWireConn = null;
-    if(typeof pages !== 'undefined') { pages = [{ id: 1, name: "Seite 1", components: [], connections: [] }]; currentPageId = 1; if(typeof renderTabs === 'function') renderTabs(); }
-    addHistory('Arbeitsfläche komplett geleert');
+    if(typeof pages !== 'undefined') { pages = [{ id: 1, name: "Seite 1", components: [], connections: [] }]; if (typeof currentPageId !== 'undefined') currentPageId = 1; if(typeof renderTabs === 'function') renderTabs(); }
+    if (typeof addHistory === 'function') addHistory('Arbeitsfläche komplett geleert');
 }
 
 // --- Menü-Aktionen (Zuordnung Normal) ---
-document.getElementById('menu-assign').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if (!contextMenuTarget || contextMenuTarget.dataset.type !== 'schuetz') { alert("Bitte eine Spule (Schütz) auswählen!"); return; }
-    isAssignMode = true; selectedParent = contextMenuTarget; canvas.classList.add('assign-mode');
-    document.querySelectorAll('.dropped-component').forEach(c => c.classList.remove('parent-selected'));
-    selectedParent.classList.add('parent-selected'); addHistory('Zuordnungsmodus aktiv');
-});
+const menuAssignBtn = document.getElementById('menu-assign');
+if (menuAssignBtn) {
+    menuAssignBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if (!window.contextMenuTarget || window.contextMenuTarget.dataset.type !== 'schuetz') { alert("Bitte eine Spule (Schütz) auswählen!"); return; }
+        if (typeof isAssignMode !== 'undefined') isAssignMode = true; 
+        if (typeof selectedParent !== 'undefined') selectedParent = window.contextMenuTarget; 
+        const canvas = document.getElementById('area-4');
+        if (canvas) canvas.classList.add('assign-mode');
+        document.querySelectorAll('.dropped-component').forEach(c => c.classList.remove('parent-selected'));
+        if (typeof selectedParent !== 'undefined' && selectedParent) selectedParent.classList.add('parent-selected'); 
+        if (typeof addHistory === 'function') addHistory('Zuordnungsmodus aktiv');
+    });
+}
 
 // NEUER SCHALTER FÜR DIE ZÄHLWEISE
-document.getElementById('menu-toggle-numbering').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    
-    window.numberingMode = window.numberingMode === 'din' ? 'continuous' : 'din';
-    addHistory('Zählweise geändert auf: ' + (window.numberingMode === 'din' ? 'DIN (Position)' : 'Fortlaufend'));
-    
-    if (typeof pages !== 'undefined') {
-        pages.forEach(p => {
-            p.components.forEach(c => {
-                if (c.type === 'schuetz') {
-                    if (typeof recalculateTerminals === 'function') recalculateTerminals(c.id);
-                }
+const menuToggleNumBtn = document.getElementById('menu-toggle-numbering');
+if (menuToggleNumBtn) {
+    menuToggleNumBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        
+        window.numberingMode = window.numberingMode === 'din' ? 'continuous' : 'din';
+        if (typeof addHistory === 'function') addHistory('Zählweise geändert auf: ' + (window.numberingMode === 'din' ? 'DIN (Position)' : 'Fortlaufend'));
+        
+        if (typeof pages !== 'undefined') {
+            pages.forEach(p => {
+                p.components.forEach(c => {
+                    if (c.type === 'schuetz') {
+                        if (typeof recalculateTerminals === 'function') recalculateTerminals(c.id);
+                    }
+                });
             });
-        });
-    }
-    canvas.querySelectorAll('.dropped-component[data-type="schuetz"]').forEach(coil => {
-        if (typeof recalculateTerminals === 'function') recalculateTerminals(coil.dataset.id);
+        }
+        const canvas = document.getElementById('area-4');
+        if (canvas) {
+            canvas.querySelectorAll('.dropped-component[data-type="schuetz"]').forEach(coil => {
+                if (typeof recalculateTerminals === 'function') recalculateTerminals(coil.dataset.id);
+            });
+        }
     });
-});
+}
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        isAssignMode = false; window.crossPageAssign.active = false; selectedParent = null; canvas.classList.remove('assign-mode');
+        if (typeof isAssignMode !== 'undefined') isAssignMode = false; 
+        if (typeof crossPageAssign !== 'undefined') crossPageAssign.active = false; 
+        if (typeof selectedParent !== 'undefined') selectedParent = null; 
+        const canvas = document.getElementById('area-4');
+        if (canvas) canvas.classList.remove('assign-mode');
         document.querySelectorAll('.dropped-component').forEach(c => c.classList.remove('parent-selected'));
     }
 });
 
-document.getElementById('menu-unassign').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if(contextMenuTarget && typeof unassignContact === 'function') unassignContact(contextMenuTarget);
-});
+const menuUnassignBtn = document.getElementById('menu-unassign');
+if (menuUnassignBtn) {
+    menuUnassignBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if(window.contextMenuTarget && typeof unassignContact === 'function') unassignContact(window.contextMenuTarget);
+    });
+}
 
 // --- PFEIL / ABBRUCHSTELLEN STEUERUNG ---
-document.getElementById('menu-link-arrow').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    window.crossPageAssign = { active: true, sourceId: contextMenuTarget.dataset.id, sourcePage: currentPageId };
-    canvas.classList.add('assign-mode');
-    addHistory('Pfeil verlinken: Ziel anklicken (auch auf anderer Seite möglich)');
-});
+const menuLinkArrowBtn = document.getElementById('menu-link-arrow');
+if (menuLinkArrowBtn) {
+    menuLinkArrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        window.crossPageAssign = { active: true, sourceId: window.contextMenuTarget.dataset.id, sourcePage: (typeof currentPageId !== 'undefined' ? currentPageId : 1) };
+        const canvas = document.getElementById('area-4');
+        if (canvas) canvas.classList.add('assign-mode');
+        if (typeof addHistory === 'function') addHistory('Pfeil verlinken: Ziel anklicken (auch auf anderer Seite möglich)');
+    });
+}
 
-document.getElementById('menu-unlink-arrow').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if(contextMenuTarget) {
-        contextMenuTarget.removeAttribute('data-link-id'); contextMenuTarget.removeAttribute('data-link-page');
-        if(typeof updateArrowVisuals === 'function') updateArrowVisuals(contextMenuTarget);
-        addHistory('Pfeil-Verlinkung gelöst');
-    }
-});
+const menuUnlinkArrowBtn = document.getElementById('menu-unlink-arrow');
+if (menuUnlinkArrowBtn) {
+    menuUnlinkArrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if(window.contextMenuTarget) {
+            window.contextMenuTarget.removeAttribute('data-link-id'); window.contextMenuTarget.removeAttribute('data-link-page');
+            if(typeof updateArrowVisuals === 'function') updateArrowVisuals(window.contextMenuTarget);
+            if (typeof addHistory === 'function') addHistory('Pfeil-Verlinkung gelöst');
+        }
+    });
+}
 
-document.getElementById('menu-jump-arrow').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    const targetPage = parseInt(contextMenuTarget.dataset.linkPage);
-    if (targetPage && targetPage !== currentPageId && typeof switchPage === 'function') {
-        switchPage(targetPage);
-        addHistory('Zur Ziel-Seite gesprungen');
-    } else if (!targetPage) {
-        alert("Dieser Pfeil ist noch mit keinem Ziel verlinkt!");
-    }
-});
+const menuJumpArrowBtn = document.getElementById('menu-jump-arrow');
+if (menuJumpArrowBtn) {
+    menuJumpArrowBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        const targetPage = parseInt(window.contextMenuTarget.dataset.linkPage);
+        if (targetPage && typeof currentPageId !== 'undefined' && targetPage !== currentPageId && typeof switchPage === 'function') {
+            switchPage(targetPage);
+            if (typeof addHistory === 'function') addHistory('Zur Ziel-Seite gesprungen');
+        } else if (!targetPage) {
+            alert("Dieser Pfeil ist noch mit keinem Ziel verlinkt!");
+        }
+    });
+}
 
 // --- Menü-Aktionen (Umbenennen & Löschen & Transform) ---
-document.getElementById('menu-rename').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu(); if (!contextMenuTarget) return;
-    let newName = prompt("Bauteil umbenennen:", contextMenuTarget.dataset.label || "");
-    if (newName !== null) {
-        contextMenuTarget.dataset.label = newName; contextMenuTarget.dataset.baseLabel = newName; 
-        if(typeof updateLabel === 'function') updateLabel(contextMenuTarget, newName, contextMenuTarget.dataset.type === 'schuetz' ? 'pos-bottom-left' : 'pos-left'); addHistory('Bauteil umbenannt');
-    }
-});
-
-document.getElementById('menu-delete').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu(); if (!contextMenuTarget) return;
-    const id = contextMenuTarget.dataset.id;
-    connections = connections.filter(conn => {
-        if (conn.port1.closest('.dropped-component') === contextMenuTarget || conn.port2.closest('.dropped-component') === contextMenuTarget) {
-            conn.pathElem.remove(); if(conn.h1) conn.h1.remove(); if(conn.h2) conn.h2.remove(); if(conn.h3) conn.h3.remove(); 
-            if (conn.textElem) conn.textElem.remove(); return false;
-        } return true;
+const menuRenameBtn = document.getElementById('menu-rename');
+if (menuRenameBtn) {
+    menuRenameBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu(); if (!window.contextMenuTarget) return;
+        let newName = prompt("Bauteil umbenennen:", window.contextMenuTarget.dataset.label || "");
+        if (newName !== null) {
+            window.contextMenuTarget.dataset.label = newName; window.contextMenuTarget.dataset.baseLabel = newName; 
+            if(typeof updateLabel === 'function') updateLabel(window.contextMenuTarget, newName, window.contextMenuTarget.dataset.type === 'schuetz' ? 'pos-bottom-left' : 'pos-left'); 
+            if (typeof addHistory === 'function') addHistory('Bauteil umbenannt');
+        }
     });
-    if (contextMenuTarget.dataset.type === 'schuetz') { canvas.querySelectorAll(`.dropped-component[data-parent-id="${id}"]`).forEach(c => { if(typeof unassignContact === 'function') unassignContact(c); }); } 
-    else { if(typeof unassignContact === 'function') unassignContact(contextMenuTarget); }
-    contextMenuTarget.remove(); contextMenuTarget = null; addHistory('Bauteil gelöscht');
-});
+}
 
-document.getElementById('menu-rotate').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if (contextMenuTarget) { let rot = parseInt(contextMenuTarget.dataset.rotation || '0') + 90; if (rot >= 360) rot = 0; contextMenuTarget.dataset.rotation = rot; applyTransform(contextMenuTarget); if(typeof updateCables === 'function') updateCables(); addHistory('Bauteil gedreht'); }
-});
-document.getElementById('menu-flip').addEventListener('click', (e) => {
-    e.stopPropagation(); hideContextMenu();
-    if (contextMenuTarget) { contextMenuTarget.dataset.flipX = contextMenuTarget.dataset.flipX === 'true' ? 'false' : 'true'; applyTransform(contextMenuTarget); if(typeof updateCables === 'function') updateCables(); addHistory('Bauteil gespiegelt'); }
-});
+const menuDeleteBtn = document.getElementById('menu-delete');
+if (menuDeleteBtn) {
+    menuDeleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu(); if (!window.contextMenuTarget) return;
+        const id = window.contextMenuTarget.dataset.id;
+        if (typeof connections !== 'undefined') {
+            connections = connections.filter(conn => {
+                if (conn.port1.closest('.dropped-component') === window.contextMenuTarget || conn.port2.closest('.dropped-component') === window.contextMenuTarget) {
+                    if (conn.pathElem) conn.pathElem.remove(); if(conn.h1) conn.h1.remove(); if(conn.h2) conn.h2.remove(); if(conn.h3) conn.h3.remove(); 
+                    if (conn.textElem) conn.textElem.remove(); return false;
+                } return true;
+            });
+        }
+        if (window.contextMenuTarget.dataset.type === 'schuetz') { 
+            const canvas = document.getElementById('area-4');
+            if (canvas) canvas.querySelectorAll(`.dropped-component[data-parent-id="${id}"]`).forEach(c => { if(typeof unassignContact === 'function') unassignContact(c); }); 
+        } 
+        else { if(typeof unassignContact === 'function') unassignContact(window.contextMenuTarget); }
+        window.contextMenuTarget.remove(); window.contextMenuTarget = null; 
+        if (typeof addHistory === 'function') addHistory('Bauteil gelöscht');
+    });
+}
+
+const menuRotateBtn = document.getElementById('menu-rotate');
+if (menuRotateBtn) {
+    menuRotateBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if (window.contextMenuTarget) { 
+            let rot = parseInt(window.contextMenuTarget.dataset.rotation || '0') + 90; if (rot >= 360) rot = 0; 
+            window.contextMenuTarget.dataset.rotation = rot; applyTransform(window.contextMenuTarget); 
+            if(typeof updateCables === 'function') updateCables(); 
+            if (typeof addHistory === 'function') addHistory('Bauteil gedreht'); 
+        }
+    });
+}
+const menuFlipBtn = document.getElementById('menu-flip');
+if (menuFlipBtn) {
+    menuFlipBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); hideContextMenu();
+        if (window.contextMenuTarget) { 
+            window.contextMenuTarget.dataset.flipX = window.contextMenuTarget.dataset.flipX === 'true' ? 'false' : 'true'; 
+            applyTransform(window.contextMenuTarget); 
+            if(typeof updateCables === 'function') updateCables(); 
+            if (typeof addHistory === 'function') addHistory('Bauteil gespiegelt'); 
+        }
+    });
+}
+
 function applyTransform(el) { const svg = el.querySelector('svg.symbol'); if (!svg) return; const rot = el.dataset.rotation || '0'; const flip = el.dataset.flipX === 'true' ? -1 : 1; svg.style.transform = `rotate(${rot}deg) scaleX(${flip})`; }
 
 
@@ -351,50 +469,90 @@ function updateTasterVisuals(el) {
     if(btn) {
         btn.addEventListener('click', (e) => { 
             e.stopPropagation(); hideContextMenu(); 
-            if (contextMenuTarget) { 
-                contextMenuTarget.dataset.subtype = subtype; 
-                updateTasterVisuals(contextMenuTarget);
-                addHistory(contextMenuTarget.dataset.type === 'schalter' ? 'Schalter-Typ geändert' : 'Taster-Typ geändert');
+            if (window.contextMenuTarget) { 
+                window.contextMenuTarget.dataset.subtype = subtype; 
+                updateTasterVisuals(window.contextMenuTarget);
+                if (typeof addHistory === 'function') addHistory(window.contextMenuTarget.dataset.type === 'schalter' ? 'Schalter-Typ geändert' : 'Taster-Typ geändert');
             } 
         }); 
     }
 });
 
-[3, 6].forEach(poles => { document.getElementById(`menu-motor-${poles}`).addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (contextMenuTarget) { contextMenuTarget.dataset.poles = poles; if(typeof updateMotorVisuals === 'function') updateMotorVisuals(contextMenuTarget); } }); });
-document.getElementById('menu-terminals-count').addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (contextMenuTarget) { let count = prompt("Anzahl Klemmen eingeben (1-10):", contextMenuTarget.dataset.terminals || '1'); if (count !== null) { count = Math.max(1, Math.min(10, parseInt(count))); contextMenuTarget.dataset.terminals = count; if(typeof updateTerminalVisuals === 'function') updateTerminalVisuals(contextMenuTarget); } } });
-['bulb', 'led', 'blink'].forEach(type => { document.getElementById(`menu-lamp-${type}`).addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (contextMenuTarget) { contextMenuTarget.dataset.subtype = type; if(typeof updateLampVisuals === 'function') updateLampVisuals(contextMenuTarget); } }); });
-['normal', 'timer-on', 'timer-off', 'timer-onoff'].forEach(subtype => { document.getElementById(`menu-type-${subtype}`).addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (contextMenuTarget) { contextMenuTarget.dataset.subtype = subtype; if(typeof updateContactVisuals === 'function') updateContactVisuals(contextMenuTarget); const parentId = contextMenuTarget.getAttribute('data-parent-id'); if (parentId) { if(typeof recalculateTerminals === 'function') recalculateTerminals(parentId); if(typeof updateCoilVisuals === 'function') updateCoilVisuals(parentId); } } }); });
-[1, 2, 3].forEach(poles => { document.getElementById(`menu-power-${poles}`).addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (contextMenuTarget) { contextMenuTarget.dataset.poles = poles; if(typeof updatePowerContactVisuals === 'function') updatePowerContactVisuals(contextMenuTarget); } }); });
+[3, 6].forEach(poles => { 
+    const btn = document.getElementById(`menu-motor-${poles}`);
+    if (btn) {
+        btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); hideContextMenu(); 
+            if (window.contextMenuTarget) { window.contextMenuTarget.dataset.poles = poles; if(typeof updateMotorVisuals === 'function') updateMotorVisuals(window.contextMenuTarget); } 
+        }); 
+    }
+});
 
+const menuTerminalsCount = document.getElementById('menu-terminals-count');
+if (menuTerminalsCount) {
+    menuTerminalsCount.addEventListener('click', (e) => { 
+        e.stopPropagation(); hideContextMenu(); 
+        if (window.contextMenuTarget) { let count = prompt("Anzahl Klemmen eingeben (1-10):", window.contextMenuTarget.dataset.terminals || '1'); if (count !== null) { count = Math.max(1, Math.min(10, parseInt(count))); window.contextMenuTarget.dataset.terminals = count; if(typeof updateTerminalVisuals === 'function') updateTerminalVisuals(window.contextMenuTarget); } } 
+    });
+}
+
+['bulb', 'led', 'blink'].forEach(type => { 
+    const btn = document.getElementById(`menu-lamp-${type}`);
+    if(btn) {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (window.contextMenuTarget) { window.contextMenuTarget.dataset.subtype = type; if(typeof updateLampVisuals === 'function') updateLampVisuals(window.contextMenuTarget); } }); 
+    }
+});
+['normal', 'timer-on', 'timer-off', 'timer-onoff'].forEach(subtype => { 
+    const btn = document.getElementById(`menu-type-${subtype}`);
+    if(btn) {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (window.contextMenuTarget) { window.contextMenuTarget.dataset.subtype = subtype; if(typeof updateContactVisuals === 'function') updateContactVisuals(window.contextMenuTarget); const parentId = window.contextMenuTarget.getAttribute('data-parent-id'); if (parentId) { if(typeof recalculateTerminals === 'function') recalculateTerminals(parentId); if(typeof updateCoilVisuals === 'function') updateCoilVisuals(parentId); } } }); 
+    }
+});
+[1, 2, 3].forEach(poles => { 
+    const btn = document.getElementById(`menu-power-${poles}`);
+    if (btn) {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); hideContextMenu(); if (window.contextMenuTarget) { window.contextMenuTarget.dataset.poles = poles; if(typeof updatePowerContactVisuals === 'function') updatePowerContactVisuals(window.contextMenuTarget); } }); 
+    }
+});
 
 // --- NEU: RASTER & ZOOM STEUERUNG ---
 let gridVisible = true;
-document.getElementById('btn-toggle-grid').addEventListener('click', () => {
-    gridVisible = !gridVisible;
-    document.getElementById('area-4').style.backgroundImage = gridVisible ? 'radial-gradient(#bdc3c7 1px, transparent 1px)' : 'none';
-    addHistory('Raster ' + (gridVisible ? 'eingeschaltet' : 'ausgeschaltet'));
-});
+const btnToggleGrid = document.getElementById('btn-toggle-grid');
+if (btnToggleGrid) {
+    btnToggleGrid.addEventListener('click', () => {
+        gridVisible = !gridVisible;
+        const canvasArea = document.getElementById('area-4');
+        if (canvasArea) canvasArea.style.backgroundImage = gridVisible ? 'radial-gradient(#bdc3c7 1px, transparent 1px)' : 'none';
+        if (typeof addHistory === 'function') addHistory('Raster ' + (gridVisible ? 'eingeschaltet' : 'ausgeschaltet'));
+    });
+}
 
 window.currentZoom = 1.0;
-const canvasArea = document.getElementById('area-4');
-const zoomLevelText = document.getElementById('zoom-level');
 
-document.getElementById('btn-zoom-in').addEventListener('click', () => {
-    if (window.currentZoom < 2.0) {
-        window.currentZoom += 0.1;
-        applyZoom();
-    }
-});
+const btnZoomIn = document.getElementById('btn-zoom-in');
+if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', () => {
+        if (window.currentZoom < 2.0) {
+            window.currentZoom += 0.1;
+            applyZoom();
+        }
+    });
+}
 
-document.getElementById('btn-zoom-out').addEventListener('click', () => {
-    if (window.currentZoom > 0.4) {
-        window.currentZoom -= 0.1;
-        applyZoom();
-    }
-});
+const btnZoomOut = document.getElementById('btn-zoom-out');
+if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', () => {
+        if (window.currentZoom > 0.4) {
+            window.currentZoom -= 0.1;
+            applyZoom();
+        }
+    });
+}
 
 function applyZoom() {
-    zoomLevelText.innerText = Math.round(window.currentZoom * 100) + '%';
-    canvasArea.style.zoom = window.currentZoom;
-    addHistory('Zoom auf ' + zoomLevelText.innerText);
+    const zoomLevelText = document.getElementById('zoom-level');
+    const canvasArea = document.getElementById('area-4');
+    if (zoomLevelText) zoomLevelText.innerText = Math.round(window.currentZoom * 100) + '%';
+    if (canvasArea) canvasArea.style.zoom = window.currentZoom;
+    if (typeof addHistory === 'function') addHistory('Zoom auf ' + (zoomLevelText ? zoomLevelText.innerText : window.currentZoom));
 }

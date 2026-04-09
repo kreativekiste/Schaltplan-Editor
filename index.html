@@ -14,15 +14,16 @@
     </div>
 
     <div id="area-2" class="area">
-        <strong>2 Datei:</strong>
         <button class="tool-btn" id="btn-save-project">💾 Speichern</button>
         <button class="tool-btn" id="btn-load-project">📂 Öffnen</button>
-        <button class="tool-btn" id="btn-export" style="background-color: #27ae60; color: white;">🖼️ Als Bild exportieren</button>
+        <button class="tool-btn" id="btn-export" style="background-color: #27ae60; color: white; padding: 5px 8px; font-size: 0.9em;">🖼️ Export</button>
         <input type="file" id="file-input" class="hidden" accept=".json">
         
         <strong style="margin-left: 20px;">Seiten:</strong>
-        <div id="page-tabs" style="display: inline-flex; gap: 5px;"></div>
-        <button class="tool-btn" id="btn-add-page">➕ Neue Seite</button>
+        <div id="page-tabs" style="display: flex; gap: 5px; max-width: 300px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px;"></div>
+        
+        <button class="tool-btn" id="btn-add-page" style="margin-left: 10px;">➕ Neue Seite</button>
+        <button class="tool-btn" id="btn-delete-page" style="background-color: #e74c3c; color: white;" title="Aktuelle Seite löschen">➖ Seite löschen</button>
 
         <div style="margin-left: 20px; border-left: 2px solid #bdc3c7; padding-left: 20px; display: flex; align-items: center; gap: 5px;">
             <button class="tool-btn" id="btn-toggle-grid" title="Raster Ein/Ausblenden">🕸 Raster</button>
@@ -39,168 +40,33 @@
         <svg id="wiring-layer"></svg>
     </div>
 
+    <div id="deckblatt-view" class="area hidden" style="grid-area: canvas; background-color: white; width: 1123px; height: 794px; margin: 20px auto; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.3); box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 50px;">
+        <input type="text" placeholder="Feld 1 eingeben..." style="width: 70%; font-size: 2.5em; text-align: center; border: none; border-bottom: 3px solid #bdc3c7; outline: none; padding: 10px; font-weight: bold; color: #2c3e50;">
+        <input type="text" placeholder="Feld 2 eingeben..." style="width: 70%; font-size: 2.5em; text-align: center; border: none; border-bottom: 3px solid #bdc3c7; outline: none; padding: 10px; font-weight: bold; color: #2c3e50;">
+        <input type="text" placeholder="Feld 3 eingeben..." style="width: 70%; font-size: 2.5em; text-align: center; border: none; border-bottom: 3px solid #bdc3c7; outline: none; padding: 10px; font-weight: bold; color: #2c3e50;">
+    </div>
+
+    <div id="ihv-view" class="area hidden" style="grid-area: canvas; background-color: white; width: 1123px; height: 794px; margin: 20px auto; padding: 40px; box-shadow: 0 0 15px rgba(0,0,0,0.3); box-sizing: border-box; overflow-y: auto;">
+        <div class="ihv-header-row">
+            <h2 style="margin: 0; color: #8e44ad; font-size: 2em;">📑 Inhaltsverzeichnis</h2>
+        </div>
+        
+        <div style="display: flex; gap: 15px; padding: 0 10px 5px 10px; color: #7f8c8d; font-weight: bold; font-size: 1.1em; border-bottom: 2px solid #ecf0f1; margin-bottom: 15px;">
+            <div style="width: 60px; text-align: center;">Blatt</div>
+            <div style="flex-grow: 1;">Beschreibung / Anlage</div>
+            <div style="width: 150px; text-align: center;">Datum / Rev.</div>
+        </div>
+        
+        <div id="ihv-list" style="flex-grow: 1;">
+            </div>
+    </div>
+
     <div id="area-3" class="area">
         <h2>3 Bauteile</h2>
-        
-        <div class="folder open">
-            <div class="folder-header">Schütze & Kontakte</div>
-            <div class="folder-content">
-                <div class="component-item" draggable="true" data-type="hauptkontakt" data-poles="3" data-hubbel="true">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 120 100" width="100" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <line x1="22" y1="40" x2="30" y2="70" stroke="black" stroke-width="2"/>
-                        <path d="M 24 55 A 4 4 0 0 1 28 55" fill="none" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                        <text x="36" y="20" font-size="9" font-family="Arial">1</text><text x="36" y="85" font-size="9" font-family="Arial">2</text>
-                        <line x1="60" y1="10" x2="60" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="60" y1="70" x2="60" y2="90" stroke="black" stroke-width="2"/>
-                        <line x1="52" y1="40" x2="60" y2="70" stroke="black" stroke-width="2"/>
-                        <path d="M 54 55 A 4 4 0 0 1 58 55" fill="none" stroke="black" stroke-width="2"/>
-                        <circle cx="60" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="60" cy="90" r="4" fill="red" class="port"/>
-                        <text x="66" y="20" font-size="9" font-family="Arial">3</text><text x="66" y="85" font-size="9" font-family="Arial">4</text>
-                        <line x1="90" y1="10" x2="90" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="90" y1="70" x2="90" y2="90" stroke="black" stroke-width="2"/>
-                        <line x1="82" y1="40" x2="90" y2="70" stroke="black" stroke-width="2"/>
-                        <path d="M 84 55 A 4 4 0 0 1 88 55" fill="none" stroke="black" stroke-width="2"/>
-                        <circle cx="90" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="90" cy="90" r="4" fill="red" class="port"/>
-                        <text x="96" y="20" font-size="9" font-family="Arial">5</text><text x="96" y="85" font-size="9" font-family="Arial">6</text>
-                        <line x1="22" y1="55" x2="82" y2="55" stroke="black" stroke-width="1" stroke-dasharray="4,4"/>
-                    </svg>
-                </div>
-                <div class="component-item" draggable="true" data-type="schuetz">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="5" x2="30" y2="37" stroke="black" stroke-width="2"/>
-                        <text x="36" y="25" font-size="10" font-family="Arial">A1</text>
-                        <circle cx="30" cy="5" r="4" fill="red" class="port"/>
-                        <rect class="coil-rect" x="10" y="37" width="40" height="26" stroke="black" stroke-width="2" fill="none"/>
-                        <line x1="30" y1="63" x2="30" y2="95" stroke="black" stroke-width="2"/>
-                        <text x="36" y="85" font-size="10" font-family="Arial">A2</text>
-                        <circle cx="30" cy="95" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-                
-                <div class="component-item" draggable="true" data-type="taster" data-subtype="no">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="22" y1="40" x2="30" y2="70" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <line x1="10" y1="55" x2="26" y2="55" stroke="black" stroke-width="1" stroke-dasharray="2,2"/>
-                        <path d="M 15 50 L 10 50 L 10 60 L 15 60" fill="none" stroke="black" stroke-width="2" />
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="schalter" data-subtype="no">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="22" y1="40" x2="30" y2="70" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <line x1="10" y1="55" x2="26" y2="55" stroke="black" stroke-width="1" stroke-dasharray="2,2"/>
-                        <path d="M 14 50 L 10 50 L 10 60 L 6 60" fill="none" stroke="black" stroke-width="2" />
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-
-                <div class="component-item" draggable="true" data-type="schliesser">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="40" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <line x1="22" y1="40" x2="30" y2="70" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-                <div class="component-item" draggable="true" data-type="oeffner">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="40" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <line x1="30" y1="40" x2="38" y2="40" stroke="black" stroke-width="2"/>
-                        <line x1="36" y1="40" x2="30" y2="70" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder">
-            <div class="folder-header">Verbraucher</div>
-            <div class="folder-content">
-                <div class="component-item" draggable="true" data-type="motor" data-poles="3">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 90 100" width="90" height="100" class="symbol">
-                        <circle cx="45" cy="50" r="25" fill="none" stroke="black" stroke-width="2"/>
-                        <text x="45" y="55" text-anchor="middle" font-size="20" font-family="Arial">M</text>
-                        <text x="45" y="68" text-anchor="middle" font-size="10" font-family="Arial">3~</text>
-                        <line x1="25" y1="10" x2="25" y2="25" stroke="black" stroke-width="2"/>
-                        <line x1="45" y1="10" x2="45" y2="25" stroke="black" stroke-width="2"/>
-                        <line x1="65" y1="10" x2="65" y2="25" stroke="black" stroke-width="2"/>
-                        <circle cx="25" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="45" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="65" cy="10" r="4" fill="red" class="port"/>
-                        <text x="30" y="20" font-size="9" font-family="Arial">U1</text><text x="50" y="20" font-size="9" font-family="Arial">V1</text><text x="70" y="20" font-size="9" font-family="Arial">W1</text>
-                    </svg>
-                </div>
-                <div class="component-item" draggable="true" data-type="lampe" data-subtype="bulb">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 100" width="60" height="100" class="symbol">
-                        <line x1="30" y1="10" x2="30" y2="30" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="30" cy="50" r="20" fill="none" stroke="black" stroke-width="2"/>
-                        <line x1="16" y1="36" x2="44" y2="64" stroke="black" stroke-width="2"/>
-                        <line x1="16" y1="64" x2="44" y2="36" stroke="black" stroke-width="2"/>
-                        <line x1="30" y1="70" x2="30" y2="90" stroke="black" stroke-width="2"/>
-                        <circle cx="30" cy="90" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="folder">
-            <div class="folder-header">Klemmen & Verbindungen</div>
-            <div class="folder-content">
-                <div class="component-item" draggable="true" data-type="klemme" data-terminals="1">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 30 100" width="30" height="100" class="symbol">
-                        <line x1="15" y1="10" x2="15" y2="40" stroke="black" stroke-width="2"/>
-                        <circle cx="15" cy="10" r="4" fill="red" class="port"/>
-                        <circle cx="15" cy="50" r="10" fill="none" stroke="black" stroke-width="2"/>
-                        <line x1="15" y1="60" x2="15" y2="90" stroke="black" stroke-width="2"/>
-                        <circle cx="15" cy="90" r="4" fill="red" class="port"/>
-                        <text x="23" y="53" font-size="9" font-family="Arial">1</text>
-                    </svg>
-                </div>
-                <div class="component-item" draggable="true" data-type="pfeil_raus" title="Pfeil Ausgang">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 50" width="60" height="50" class="symbol">
-                        <line x1="10" y1="20" x2="40" y2="20" stroke="black" stroke-width="2"/>
-                        <polygon points="40,10 55,20 40,30" fill="none" stroke="black" stroke-width="2"/>
-                        <circle cx="10" cy="20" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-                <div class="component-item" draggable="true" data-type="pfeil_rein" title="Pfeil Eingang">
-                    <button class="edit-comp-btn" title="Bauteil bearbeiten">✏️</button>
-                    <svg viewBox="0 0 60 50" width="60" height="50" class="symbol">
-                        <polygon points="5,10 20,20 5,30" fill="none" stroke="black" stroke-width="2"/>
-                        <line x1="20" y1="20" x2="50" y2="20" stroke="black" stroke-width="2"/>
-                        <circle cx="50" cy="20" r="4" fill="red" class="port"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
+        <div class="folder open"><div class="folder-header">Kontakt</div><div class="folder-content" id="kontakt"></div></div>
+        <div class="folder"><div class="folder-header">Sicherungen</div><div class="folder-content" id="sicherungen"></div></div>
+        <div class="folder"><div class="folder-header">Verbraucher</div><div class="folder-content" id="verbraucher"></div></div>
+        <div class="folder"><div class="folder-header">Klemmen</div><div class="folder-content" id="klemmen"></div></div>
     </div>
 
     <div id="editor-modal" class="modal hidden">
@@ -312,16 +178,18 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+    <script src="registry.js"></script>
+    <script src="modul_kontakte.js"></script>
+    <script src="modul_verbraucher.js"></script>
+    <script src="modul_verbindungen.js"></script>
+    <script src="modul_sicherungen.js"></script>
     <script src="main.js"></script>
     <script src="verkabelung.js"></script>
     <script src="bauteile.js"></script>
     <script src="pages.js"></script>
     <script src="ui.js"></script>
     <script src="editor.js"></script>
-    
     <script src="export.js"></script>
-          <script src="rahmen.js"></script> </body>
-</html>
+    <script src="rahmen.js"></script> 
 </body>
 </html>

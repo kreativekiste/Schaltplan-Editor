@@ -1,4 +1,4 @@
-# Software-Lizenzvereinbarung (Version 2.0)
+# Software-Lizenzvereinbarung (Version 3.4)
 **Projekt:** Interaktiver Schaltplan-Editor
 **Urheber:** [Kreative Kiste](https://www.kreativekiste.de)
 **Stand:** 06.04.2026
