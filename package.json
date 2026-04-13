@@ -1,0 +1,17 @@
+{
+  "name": "schaltplan-editor",
+  "version": "3.4.1",
+  "description": "Ein interaktiver Schaltplan-Editor für die Erstellung von Schaltplänen.",
+  "main": "main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "tauri": "tauri",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1"
+  }
+}

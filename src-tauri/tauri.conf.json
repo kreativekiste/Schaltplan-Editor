@@ -1,0 +1,47 @@
+{
+  "productName": "schaltplan-editor",
+  "version": "3.4.1",
+  "identifier": "com.kreativekiste.schaltplan-editor",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Schaltplan Editor",
+        "width": 1000,
+        "height": 800
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "licenseFile": "../LICENSE.md",
+    "category": "Development",
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "windows": {
+      "nsis": {
+        "languages": ["German"]
+      }
+    },
+    "linux": {
+      "deb": {
+      }
+    }
+  }
+}
